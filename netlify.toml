@@ -1,0 +1,20 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"  # 明确指定函数目录
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[functions]
+  node_bundler = "esbuild"
+  directory = "netlify/functions"  # 指定函数目录
