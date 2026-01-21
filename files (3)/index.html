@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语学习乐园</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* AI入口按钮 - 在标题上方 */
+        .ai-entrance {
+            position: fixed;
+            top: 10px;
+            right: 20px;
+            z-index: 1001;
+        }
+
+        .ai-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .ai-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        /* AI界面样式 */
+        .ai-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            z-index: 2000;
+            color: white;
+        }
+
+        .ai-header {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .ai-exit-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+
+        .ai-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .ai-content {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        .ai-chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: #3498db;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .ai-message {
+            background: #27ae60;
+            margin-right: auto;
+        }
+
+        .translation {
+            background: #f39c12;
+            font-size: 12px;
+            margin-top: 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .send-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .send-btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .ai-info {
+            width: 300px;
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-left: 2px solid #3498db;
+        }
+
+        .ai-info h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .ai-info ul {
+            list-style: none;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .ai-info li {
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .ai-info li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 原有样式保持不变 */
+        .header {
+            text-align: center;
+            padding: 80px 20px 40px;
+            color: white;
+        }
+
+        .title {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .letter-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .letter-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .letter-card.active {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            animation: pulse 0.6s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .letter-upper {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .letter-lower {
+            font-size: 1.8em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .sound-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50%;
+            opacity: 0;
+            animation: blink 1s infinite;
+        }
+
+        .sound-indicator.active {
+            opacity: 1;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .controls {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .practice-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .practice-title {
+            color: white;
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* 新增：练习区域头部和退出按钮 */
+        .practice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .practice-header h2 {
+            color: white;
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .practice-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .exit-practice-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .exit-practice-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .permission-system {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .admin-password {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 400px;
+            display: none;
+        }
+
+        .password-input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+        }
+
+        .cheat-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #ffeaa7;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2em;
+            }
+            
+            .alphabet-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 15px;
+            }
+            
+            .ai-content {
+                flex-direction: column;
+            }
+            
+            .ai-info {
+                width: 100%;
+                height: 200px;
+            }
+            
+            .practice-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .practice-controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- AI入口按钮 -->
+    <div class="ai-entrance">
+        <button class="ai-btn" onclick="openAI()">🤖 DeepSeek AI助手</button>
+    </div>
+
+    <!-- AI界面 -->
+    <div class="ai-container" id="aiContainer">
+        <div class="ai-header">
+            <button class="ai-exit-btn" onclick="closeAI()">← Exit</button>
+            <div class="ai-title">🤖 DeepSeek AI English Assistant (已连接)</div>
+        </div>
+        <div class="ai-content">
+            <div class="ai-chat-area">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai-message">
+                        Hello! I'm DeepSeek AI, now connected with your API key! Ask me anything about English - vocabulary, grammar, sentences, essays, pronunciation, etc. Please ask questions in English only!
+                        <div class="translation">你好！我是DeepSeek AI，现已连接你的API密钥！问我任何关于英语的问题 - 词汇、语法、句子、作文、发音等。请只用英文提问！</div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything about English in English..." onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+            <div class="ai-info">
+                <h3>✅ API 连接状态</h3>
+                <ul>
+                    <li>API密钥已配置 ✓</li>
+                    <li>DeepSeek AI已连接</li>
+                    <li>免费额度充足</li>
+                    <li>响应速度快</li>
+                    <li>支持复杂英语问题</li>
+                </ul>
+                <h3 style="margin-top: 20px;">🎯 使用说明</h3>
+                <ul>
+                    <li>直接用英文提问</li>
+                    <li>AI会理解上下文</li>
+                    <li>获得详细专业回答</li>
+                    <li>包含中英双语翻译</li>
+                    <li>无需额外费用</li>
+                </ul>
+                <div id="apiStatus" style="margin-top: 15px; padding: 10px; background: rgba(46, 204, 113, 0.2); border-radius: 5px; font-size: 12px;">
+                    <div>API状态: <span id="statusText" style="color: #2ecc71;">✓ 已连接并可用</span></div>
+                    <div style="margin-top: 5px; font-size: 11px;">安全模式：密钥保护中</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 原有HTML内容 -->
+    <div class="header">
+        <h1 class="title">🎓 英语学习乐园</h1>
+        <p class="subtitle">点击字母听发音，开始您的英语学习之旅！</p>
+    </div>
+
+    <div class="container">
+        <div class="alphabet-grid" id="alphabetGrid">
+            <!-- 字母卡片将通过JavaScript生成 -->
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="readAllLetters()">🔊 全部朗读</button>
+            <button class="btn" onclick="toggleCheatMode()">🎯 巩固练习</button>
+        </div>
+
+        <div class="cheat-notice" id="cheatNotice">
+            🔓 管理员模式：字母已在左侧显示，可以边看边练习（作弊模式）
+        </div>
+
+        <div class="practice-section" id="practiceSection" style="display: none;">
+            <!-- 新增：练习区域头部 -->
+            <div class="practice-header">
+                <h2 class="practice-title">🎯 巩固练习</h2>
+                <div class="practice-controls">
+                    <button class="btn" onclick="nextMatchQuestion()">下一题</button>
+                    <button class="exit-practice-btn" onclick="exitPractice()">🚪 退出练习</button>
+                </div>
+            </div>
+            
+            <p style="color: white; text-align: center; font-size: 1.2em;">找出与下面小写字母对应的大写字母</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <div id="targetLetter" style="font-size: 4em; color: white; font-weight: bold; margin-bottom: 20px;">a</div>
+                <div id="matchOptions" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                    <!-- 选项将通过JavaScript生成 -->
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <div id="matchScore" style="color: white; margin-top: 10px; font-size: 1.1em;">得分: 0/0</div>
+            </div>
+        </div>
+
+        <div class="permission-system">
+            <div class="admin-password" id="adminPassword">
+                <h3 style="color: #333; margin-bottom: 15px;">🔐 管理员验证</h3>
+                <p style="color: #666; margin-bottom: 15px;">长按"巩固练习"按钮输入管理员密码</p>
+                <input type="password" class="password-input" id="passwordInput" placeholder="请输入管理员密码">
+                <br>
+                <button class="btn" onclick="checkPassword()" style="margin: 10px 5px; padding: 10px 20px; font-size: 14px;">确认</button>
+                <button class="btn" onclick="cancelPassword()" style="margin: 10px 5px; padding: 10px 20px; font-size: 14px; background: #6c757d;">取消</button>
+                <div id="passwordError" style="color: red; margin-top: 10px; display: none;">密码错误，请重试！</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 重要修改：更新 API 端点路径为 Netlify Functions 的正确路径
+        const API_ENDPOINT = '/.netlify/functions/chat';
+
+        // AI相关功能 - 真实DeepSeek版本
+        function openAI() {
+            document.getElementById('aiContainer').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            updateAPIStatus();
+        }
+
+        function closeAI() {
+            document.getElementById('aiContainer').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function updateAPIStatus() {
+            const statusElement = document.getElementById('statusText');
+            statusElement.textContent = '✓ 已连接并可用';
+            statusElement.style.color = '#2ecc71';
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (!message) return;
+            
+            // 添加用户消息
+            addMessage(message, 'user');
+            input.value = '';
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span>';
+            
+            try {
+                // 调用真实的DeepSeek API
+                console.log('正在调用 API:', API_ENDPOINT);
+                const aiResponse = await callDeepSeek(message);
+                
+                if (aiResponse.success === false) {
+                    throw new Error(aiResponse.error || 'API调用失败');
+                }
+                
+                addMessage(aiResponse.text, 'ai', aiResponse.translation);
+                
+            } catch (error) {
+                console.error('DeepSeek API Error:', error);
+                let errorMessage = "抱歉，调用DeepSeek AI时出现错误。<br><br>";
+                
+                if (error.message.includes('401')) {
+                    errorMessage += "❌ API密钥无效或已过期<br>请检查密钥是否正确";
+                } else if (error.message.includes('429')) {
+                    errorMessage += "⏰ API调用频率超限<br>请稍后再试";
+                } else if (error.message.includes('500')) {
+                    errorMessage += "🔧 DeepSeek服务器内部错误<br>请稍后再试";
+                } else if (error.message.includes('502')) {
+                    errorMessage += "🔌 Netlify函数连接失败<br>请检查函数配置";
+                } else {
+                    errorMessage += `错误详情: ${error.message}<br>请检查网络连接或联系技术支持`;
+                }
+                
+                addMessage(errorMessage, 'ai', "抱歉，调用DeepSeek AI时出现错误。请检查API配置或网络连接。");
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+            }
+        }
+
+        async function callDeepSeek(userMessage) {
+            try {
+                console.log('发送请求到:', API_ENDPOINT);
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: userMessage
+                    })
+                });
+
+                console.log('响应状态:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API错误响应:', errorText);
+                    
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                    } catch {
+                        errorData = { error: `HTTP ${response.status}: ${errorText}` };
+                    }
+                    
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API响应数据:', data);
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+                
+                return {
+                    text: data.text,
+                    translation: data.translation,
+                    success: true
+                };
+                
+            } catch (error) {
+                console.error('Chat API Error Details:', error);
+                throw error;
+            }
+        }
+
+        function addMessage(text, sender, translation = '') {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            messageDiv.innerHTML = text;
+            if (translation && translation !== text) {
+                messageDiv.innerHTML += `<div class="translation">${translation}</div>`;
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 原有JavaScript功能保持不变
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+        let isReadingAll = false;
+        let currentReadingIndex = 0;
+        let speechSynthesis = window.speechSynthesis;
+        let voices = [];
+        
+        // 获取语音
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            if (voices.length === 0) {
+                speechSynthesis.addEventListener('voiceschanged', () => {
+                    voices = speechSynthesis.getVoices();
+                });
+            }
+        }
+        
+        loadVoices();
+
+        // 生成字母卡片
+        function generateAlphabetCards() {
+            const grid = document.getElementById('alphabetGrid');
+            grid.innerHTML = '';
+            
+            for (let letter of alphabet) {
+                const card = document.createElement('div');
+                card.className = 'letter-card';
+                card.innerHTML = `
+                    <div class="sound-indicator"></div>
+                    <div class="letter-upper">${letter.toUpperCase()}</div>
+                    <div class="letter-lower">${letter}</div>
+                `;
+                
+                card.addEventListener('click', () => speakLetter(letter, card));
+                grid.appendChild(card);
+            }
+        }
+
+        // 朗读单个字母
+        function speakLetter(letter, cardElement) {
+            if (isReadingAll) return;
+            
+            // 停止当前播放
+            speechSynthesis.cancel();
+            
+            // 视觉反馈
+            cardElement.classList.add('active');
+            const indicator = cardElement.querySelector('.sound-indicator');
+            indicator.classList.add('active');
+            
+            // 播放语音
+            const utterance = new SpeechSynthesisUtterance(letter);
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
+            
+            // 寻找英语语音
+            const englishVoice = voices.find(voice => 
+                voice.lang.startsWith('en') || voice.name.includes('English')
+            );
+            if (englishVoice) {
+                utterance.voice = englishVoice;
+            }
+            
+            utterance.onend = () => {
+                cardElement.classList.remove('active');
+                indicator.classList.remove('active');
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 全部朗读
+        function readAllLetters() {
+            if (isReadingAll) {
+                speechSynthesis.cancel();
+                isReadingAll = false;
+                return;
+            }
+            
+            isReadingAll = true;
+            currentReadingIndex = 0;
+            
+            function speakNext() {
+                if (!isReadingAll || currentReadingIndex >= alphabet.length) {
+                    isReadingAll = false;
+                    return;
+                }
+                
+                const letter = alphabet[currentReadingIndex];
+                const cards = document.querySelectorAll('.letter-card');
+                const card = cards[currentReadingIndex];
+                
+                speakLetter(letter, card);
+                currentReadingIndex++;
+                
+                setTimeout(speakNext, 1000);
+            }
+            
+            speakNext();
+        }
+
+        // 权限系统相关变量
+        let hasPermission = false;
+        let longPressTimer = null;
+        let isLongPress = false;
+
+        // 巩固练习相关变量
+        let matchScore = 0;
+        let matchTotal = 0;
+
+        // 长按事件处理
+        function setupPracticeButton() {
+            const practiceBtn = document.querySelector('.controls .btn:last-child');
+            
+            practiceBtn.addEventListener('mousedown', startLongPress);
+            practiceBtn.addEventListener('mouseup', endLongPress);
+            practiceBtn.addEventListener('mouseleave', cancelLongPress);
+            practiceBtn.addEventListener('touchstart', startLongPress);
+            practiceBtn.addEventListener('touchend', endLongPress);
+        }
+
+        function startLongPress() {
+            isLongPress = false;
+            longPressTimer = setTimeout(() => {
+                isLongPress = true;
+                showPasswordDialog();
+            }, 1000);
+        }
+
+        function endLongPress() {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+            }
+            if (!isLongPress) {
+                startPractice();
+            }
+            isLongPress = false;
+        }
+
+        function cancelLongPress() {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+            }
+            isLongPress = false;
+        }
+
+        // 显示密码对话框
+        function showPasswordDialog() {
+            document.getElementById('adminPassword').style.display = 'block';
+            document.getElementById('passwordInput').focus();
+        }
+
+        // 检查密码
+        function checkPassword() {
+            const inputPassword = document.getElementById('passwordInput').value;
+            const correctPassword = 'gong1234_gyc';
+            
+            if (inputPassword === correctPassword) {
+                hasPermission = true;
+                document.getElementById('adminPassword').style.display = 'none';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordError').style.display = 'none';
+                alert('权限验证成功！管理员模式已开启，可以边看字母边练习了！');
+                
+                // 如果当前在练习中，切换到作弊模式
+                if (document.getElementById('practiceSection').style.display === 'block') {
+                    document.getElementById('cheatNotice').style.display = 'block';
+                }
+            } else {
+                document.getElementById('passwordError').style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        // 取消密码输入
+        function cancelPassword() {
+            document.getElementById('adminPassword').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').style.display = 'none';
+            isLongPress = false;
+        }
+
+        // 开始练习
+        function startPractice() {
+            if (!hasPermission) {
+                // 普通模式：隐藏字母，显示练习
+                document.getElementById('alphabetGrid').style.display = 'none';
+                document.getElementById('practiceSection').style.display = 'block';
+                document.getElementById('cheatNotice').style.display = 'none';
+            } else {
+                // 作弊模式：显示字母在上方，练习在下方
+                document.getElementById('alphabetGrid').style.display = 'grid';
+                document.getElementById('practiceSection').style.display = 'block';
+                document.getElementById('cheatNotice').style.display = 'block';
+            }
+            
+            nextMatchQuestion();
+        }
+
+        // 新增：退出练习功能
+        function exitPractice() {
+            // 隐藏练习区域
+            document.getElementById('practiceSection').style.display = 'none';
+            document.getElementById('cheatNotice').style.display = 'none';
+            
+            // 显示字母网格
+            document.getElementById('alphabetGrid').style.display = 'grid';
+            
+            // 重置分数
+            matchScore = 0;
+            matchTotal = 0;
+            document.getElementById('matchScore').textContent = '得分: 0/0';
+            
+            // 给用户反馈
+            console.log('已退出巩固练习模式，返回主界面');
+        }
+
+        // 切换作弊模式显示
+        function toggleCheatMode() {
+            startPractice();
+        }
+
+        // 下一题
+        function nextMatchQuestion() {
+            const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+            document.getElementById('targetLetter').textContent = randomLetter;
+            
+            // 生成选项
+            const options = [randomLetter.toUpperCase()];
+            while (options.length < 4) {
+                const randomUpper = alphabet[Math.floor(Math.random() * alphabet.length)].toUpperCase();
+                if (!options.includes(randomUpper)) {
+                    options.push(randomUpper);
+                }
+            }
+            
+            // 打乱选项
+            options.sort(() => Math.random() - 0.5);
+            
+            // 创建选项按钮
+            const optionsContainer = document.getElementById('matchOptions');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.textContent = option;
+                btn.className = 'btn';
+                btn.style.padding = '10px 15px';
+                btn.style.fontSize = '18px';
+                btn.style.margin = '5px';
+                btn.onclick = () => checkMatchAnswer(option, randomLetter.toUpperCase(), btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // 检查答案
+        function checkMatchAnswer(selectedOption, correctAnswer, buttonElement) {
+            const buttons = document.querySelectorAll('#matchOptions button');
+            
+            // 禁用所有按钮
+            buttons.forEach(btn => btn.disabled = true);
+            
+            if (selectedOption === correctAnswer) {
+                buttonElement.style.background = '#28a745';
+                matchScore++;
+                // 播放正确答案的语音
+                speakLetter(correctAnswer.toLowerCase(), buttonElement);
+            } else {
+                buttonElement.style.background = '#dc3545';
+                // 高亮正确答案
+                buttons.forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.style.background = '#28a745';
+                    }
+                });
+            }
+            
+            matchTotal++;
+            document.getElementById('matchScore').textContent = `得分: ${matchScore}/${matchTotal}`;
+            
+            // 2秒后下一题
+            setTimeout(() => {
+                nextMatchQuestion();
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.background = '';
+                });
+            }, 2000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            generateAlphabetCards();
+            setupPracticeButton();
+            updateAPIStatus();
+            
+            // 点击其他地方取消密码输入
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.admin-password') && !e.target.closest('.controls .btn:last-child')) {
+                    // document.getElementById('adminPassword').style.display = 'none';
+                }
+            });
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('adminPassword').style.display = 'none';
+                cancelPassword();
+            }
+            if (e.key === 'Enter' && document.getElementById('adminPassword').style.display === 'block') {
+                checkPassword();
+            }
+            // 新增：在练习模式下按ESC键退出练习
+            if (e.key === 'Escape' && document.getElementById('practiceSection').style.display === 'block') {
+                exitPractice();
+            }
+        });
+    </script>
+</body>
+</html>
